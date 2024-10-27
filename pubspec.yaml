@@ -1,0 +1,33 @@
+name: pingme
+description: "A new Flutter project."
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+  vibration: ^1.7.3 
+  cupertino_icons: ^1.0.8
+  device_info_plus: ^10.0.0  # Use the correct version here
+  audioplayers: ^6.1.0
+  path_provider: ^2.1.4
+  permission_handler: ^11.3.1
+  intl: ^0.17.0
+  flutter_sound: ^9.16.3
+  record: ^5.0.1
+  
+  
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/audios/alarm_sound.mp3
