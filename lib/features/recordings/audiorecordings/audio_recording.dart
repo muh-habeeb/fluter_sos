@@ -14,13 +14,11 @@ class AudioRecording {
     try {
       bool permissionGranted = await requestMicrophonePermission(context);
       if (!permissionGranted) {
-        print("Microphone permission not granted");
         return;
       }
 
       Directory? externalDir = await getExternalStorageDirectory();
       if (externalDir == null) {
-        print("Error: Unable to access external storage");
         return;
       }
 
@@ -35,8 +33,6 @@ class AudioRecording {
       String fileName = 'recording_$dateTime.m4a';
       filePath = '${pingMeDir.path}/$fileName';
 
-      print("Attempting to create file: $filePath");
-
       if (await _audioRecorder.hasPermission()) {
         await _audioRecorder.start(
           const RecordConfig(
@@ -49,38 +45,28 @@ class AudioRecording {
           path: filePath!,
         );
         isRecording = true;
-        print("Recording started: $filePath");
-      } else {
-        print("Audio recording permission not granted");
-      }
+      } else {}
     } catch (e) {
-      print("Error starting recording: $e");
       isRecording = false;
     }
   }
 
   Future<String?> stopRecording() async {
     if (!isRecording) {
-      print("No active recording to stop");
       return null;
     }
 
     try {
-      print("Attempting to stop recorder");
       String? path = await _audioRecorder.stop();
-      print("Recording stopped. Path: $path");
 
       isRecording = false;
 
       if (path != null && File(path).existsSync()) {
-        print("Recording file exists at: $path");
         return path;
       } else {
-        print("Recording file does not exist or path is null");
         return null;
       }
     } catch (e) {
-      print("Error stopping recording: $e");
       return null;
     }
   }
@@ -145,8 +131,6 @@ class AudioRecording {
           );
         },
       );
-    } else {
-      print("No file path available to show");
-    }
+    } else {}
   }
 }

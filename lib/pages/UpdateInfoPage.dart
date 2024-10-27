@@ -178,7 +178,7 @@ class _UpdateInfoPageState extends State<UpdateInfoPage> {
                   ),
                   onPressed: submitDetails,
                   child: const Text(
-                    'Submit',
+                    'Update',
                     style: TextStyle(
                       fontSize: 18,
                       color: Colors.white,

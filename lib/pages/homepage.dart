@@ -63,7 +63,6 @@ class HomePageState extends State<HomePage> {
     if (!permissionsGranted) {
       permissionsGranted = await requestPermissions(context);
       if (!permissionsGranted) {
-        print("Permissions not granted");
         _isProcessing = false;
         return;
       }
@@ -93,7 +92,6 @@ class HomePageState extends State<HomePage> {
   }
 
   Future<void> _startAlarmAndRecording() async {
-    print("Starting alarm and recording");
     if (isAlarmOn) {
       _alarmService.playAlarm();
 
@@ -122,7 +120,6 @@ class HomePageState extends State<HomePage> {
   }
 
   Future<void> _stopAlarmAndRecording() async {
-    print("Stopping alarm and recording");
     _alarmService.stopAlarm();
     _countdownTimer?.cancel();
 
@@ -133,10 +130,7 @@ class HomePageState extends State<HomePage> {
             filePath != null ? 'Record saved' : 'Recording failed to save';
       });
       if (filePath != null) {
-        print("Recording saved: $filePath");
-      } else {
-        print("Failed to save recording");
-      }
+      } else {}
     } else {
       setState(() {
         recordingStatus = 'Something went wrong';
