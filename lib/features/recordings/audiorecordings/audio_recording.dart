@@ -41,9 +41,10 @@ class AudioRecording {
         await _audioRecorder.start(
           const RecordConfig(
             encoder: AudioEncoder.aacLc,
-            bitRate: 128000,
-            sampleRate: 44100,
-            numChannels: 2, // Stereo recording for better ambient sound capture
+            bitRate: 256000, // Increased bitrate for better quality
+            sampleRate: 48000, // Increased sample rate
+            numChannels: 2,
+            // Use the default audio source, which should be the microphone
           ),
           path: filePath!,
         );

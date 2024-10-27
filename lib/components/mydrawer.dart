@@ -1,71 +1,81 @@
 import 'package:flutter/material.dart';
 import 'package:pingme/pages/UpdateInfoPage.dart';
-import 'package:vibration/vibration.dart'; // Import vibration package
+import 'package:vibration/vibration.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MyDrawer extends StatefulWidget {
-  const MyDrawer({super.key});
+  final Function(bool) onAlarmToggle;
+
+  const MyDrawer({super.key, required this.onAlarmToggle});
 
   @override
-  // ignore: library_private_types_in_public_api
   _MyDrawerState createState() => _MyDrawerState();
 }
 
 class _MyDrawerState extends State<MyDrawer>
     with SingleTickerProviderStateMixin {
-  bool isAlarmOn = false; // State for the switch button
-  late AnimationController _controller; // Animation controller
-  late Animation<double> _animation; // Animation for swinging effect
+  bool isAlarmOn = true; // Default value is true
+  late AnimationController _controller;
+  late Animation<double> _animation;
+  late SharedPreferences prefs;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 20), // Duration for the swing
+      duration: const Duration(milliseconds: 20),
       vsync: this,
     )..addListener(() {
         setState(() {});
       });
 
-    // Tween values set to swing between -0.5 and 0.5
     _animation = Tween<double>(begin: 0.0, end: 0.5).animate(CurvedAnimation(
       parent: _controller,
       curve: Curves.easeInOut,
     ));
+
+    _loadAlarmState();
+  }
+
+  Future<void> _loadAlarmState() async {
+    prefs = await SharedPreferences.getInstance();
+    setState(() {
+      isAlarmOn = prefs.getBool('isAlarmOn') ?? true;
+    });
+  }
+
+  Future<void> _saveAlarmState(bool value) async {
+    await prefs.setBool('isAlarmOn', value);
+    widget.onAlarmToggle(value); // Notify the parent widget
   }
 
   @override
   void dispose() {
-    _controller.dispose(); // Dispose the controller
+    _controller.dispose();
     super.dispose();
   }
 
   void _toggleAlarm() async {
     setState(() {
-      isAlarmOn = !isAlarmOn; // Update the alarm state
+      isAlarmOn = !isAlarmOn;
     });
-    _swingAnimation(); // Start the pendulum animation
+    _swingAnimation();
+    _saveAlarmState(isAlarmOn);
 
-    // Check if the alarm is turned on
     if (isAlarmOn) {
-      // Vibrate the device when the alarm is turned on
-      // Check if the device has a vibrator
-
       final hasVibrator = await Vibration.hasVibrator();
       if (hasVibrator == true) {
-        // Vibrate for 500 milliseconds
         Vibration.vibrate(duration: 500);
       }
     }
   }
 
   void _swingAnimation() async {
-    // Swing left to right
     for (int i = 0; i < 3; i++) {
-      // Swing left and right 3 times
-      await _controller.forward(); // Swing to the right
-      await _controller.reverse(); // Swing back to the left
+      await _controller.forward();
+      await _controller.reverse();
     }
-    _controller.value = 0; // Reset to the default position
+    _controller.value = 0;
   }
 
   @override
@@ -177,7 +187,7 @@ class _MyDrawerState extends State<MyDrawer>
                   Switch(
                     value: isAlarmOn,
                     onChanged: (value) {
-                      _toggleAlarm(); // Call the toggle function
+                      _toggleAlarm();
                     },
                     activeColor: const Color.fromARGB(
                         255, 105, 14, 14), // Color when switch is on

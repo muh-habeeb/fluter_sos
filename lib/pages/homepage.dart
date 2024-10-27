@@ -4,7 +4,8 @@ import 'package:pingme/features/recordings/audiorecordings/audio_recording.dart'
 import 'package:pingme/utils/color_hexing.dart';
 import 'package:pingme/features/alarm/alarm_manager.dart';
 import 'package:pingme/services/permission_handler.dart';
-import 'package:vibration/vibration.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -16,14 +17,27 @@ class HomePage extends StatefulWidget {
 class HomePageState extends State<HomePage> {
   bool isOn = false;
   bool permissionsGranted = false;
+  bool isAlarmOn = true;
   final AlarmService _alarmService = AlarmService();
   final AudioRecording _audioRecording = AudioRecording();
   String recordingStatus = 'Not Recording';
+  int countdown = 7;
+  Timer? _statusResetTimer;
+  Timer? _countdownTimer;
+  bool _isProcessing = false;
 
   @override
   void initState() {
     super.initState();
     _checkPermissions();
+    _loadAlarmState();
+  }
+
+  @override
+  void dispose() {
+    _statusResetTimer?.cancel();
+    _countdownTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _checkPermissions() async {
@@ -31,11 +45,26 @@ class HomePageState extends State<HomePage> {
     setState(() {});
   }
 
+  Future<void> _loadAlarmState() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      isAlarmOn = prefs.getBool('isAlarmOn') ?? true;
+    });
+  }
+
   Future<void> _toggleAlarmAndRecording() async {
+    if (_isProcessing) {
+      _handleQuickPress();
+      return;
+    }
+
+    _isProcessing = true;
+
     if (!permissionsGranted) {
       permissionsGranted = await requestPermissions(context);
       if (!permissionsGranted) {
         print("Permissions not granted");
+        _isProcessing = false;
         return;
       }
     }
@@ -49,15 +78,44 @@ class HomePageState extends State<HomePage> {
     } else {
       await _stopAlarmAndRecording();
     }
+
+    _isProcessing = false;
+  }
+
+  void _handleQuickPress() {
+    _alarmService.stopAlarm();
+    _countdownTimer?.cancel();
+    setState(() {
+      isOn = false;
+      recordingStatus = 'Something went wrong';
+    });
+    _startStatusResetTimer();
   }
 
   Future<void> _startAlarmAndRecording() async {
     print("Starting alarm and recording");
-    // Use vibration instead of sound alarm
-    if (await Vibration.hasVibrator() ?? false) {
-      Vibration.vibrate(duration: 1000, amplitude: 128);
+    if (isAlarmOn) {
+      _alarmService.playAlarm();
+
+      _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        if (countdown > 0) {
+          setState(() {
+            recordingStatus = 'Recording will start in $countdown';
+            countdown--;
+          });
+        } else {
+          timer.cancel();
+          _startRecording();
+        }
+      });
+    } else {
+      _startRecording();
     }
-    await _audioRecording.startRecording(context);
+  }
+
+  void _startRecording() {
+    _alarmService.stopAlarm();
+    _audioRecording.startRecording(context);
     setState(() {
       recordingStatus = 'Recording...';
     });
@@ -65,17 +123,37 @@ class HomePageState extends State<HomePage> {
 
   Future<void> _stopAlarmAndRecording() async {
     print("Stopping alarm and recording");
-    Vibration.cancel(); // Stop vibration
-    String? filePath = await _audioRecording.stopRecording();
-    setState(() {
-      recordingStatus =
-          filePath != null ? 'Record saved' : 'Recording failed to save';
-    });
-    if (filePath != null) {
-      print("Recording saved: $filePath");
+    _alarmService.stopAlarm();
+    _countdownTimer?.cancel();
+
+    if (recordingStatus == 'Recording...') {
+      String? filePath = await _audioRecording.stopRecording();
+      setState(() {
+        recordingStatus =
+            filePath != null ? 'Record saved' : 'Recording failed to save';
+      });
+      if (filePath != null) {
+        print("Recording saved: $filePath");
+      } else {
+        print("Failed to save recording");
+      }
     } else {
-      print("Failed to save recording");
+      setState(() {
+        recordingStatus = 'Something went wrong';
+      });
     }
+
+    _startStatusResetTimer();
+  }
+
+  void _startStatusResetTimer() {
+    _statusResetTimer?.cancel();
+    _statusResetTimer = Timer(const Duration(seconds: 2), () {
+      setState(() {
+        recordingStatus = 'Not Recording';
+        countdown = 7;
+      });
+    });
   }
 
   @override
@@ -104,9 +182,15 @@ class HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      endDrawer: const SizedBox(
+      endDrawer: SizedBox(
         width: 300,
-        child: MyDrawer(),
+        child: MyDrawer(
+          onAlarmToggle: (bool value) {
+            setState(() {
+              isAlarmOn = value;
+            });
+          },
+        ),
       ),
       body: Center(
         child: Column(
