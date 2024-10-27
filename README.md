@@ -57,3 +57,12 @@ lib/
     This implementation should meet your requirements while maintaining the existing UI design. Make sure that the AudioRecording, AlarmService, and permission handling classes are properly implemented to support these features.
     "# fluter_sos"
 ````
+
+in the update info i added 2 text filed 1 for name and 1 for phone number
+now if a user enter information in that
+
+now the main things ineed to add fireabse database
+and no autentication
+just add db and store the each users data like the name and ph number they enterd ,if updated that details also .recordings (if online then only send to db if user off line then store in teh phone when user comes online that time push the recordings into db if the recodrdings alery in the db then except those records only push to db (identify the recordigns using th name it's uniqe). )also
+
+how to do these things

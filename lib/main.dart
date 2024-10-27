@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pingme/pages/UpdateInfoPage.dart';
 import 'package:pingme/pages/homepage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -22,7 +23,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const HomePage(),
+      // home: const HomePage(),
+      home: const UpdateInfoPage(),
     );
   }
 }
