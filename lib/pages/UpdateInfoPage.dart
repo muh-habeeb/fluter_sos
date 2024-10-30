@@ -12,10 +12,13 @@ class UpdateInfoPage extends StatefulWidget {
 class _UpdateInfoPageState extends State<UpdateInfoPage> {
   String name = ''; // Variable to hold the name
   String phoneNumber = ''; // Variable to hold the phone number
+  String userNumber = ''; // Variable to hold the Udrt number
   bool isSaved = false; // Flag to check if details are saved
 
   final TextEditingController nameController = TextEditingController();
-  final TextEditingController phoneController = TextEditingController();
+  final TextEditingController recieverPhoneController = TextEditingController();
+  final TextEditingController userPhoneController =
+      TextEditingController(); // Controller for Udrt number
 
   @override
   void initState() {
@@ -28,10 +31,14 @@ class _UpdateInfoPageState extends State<UpdateInfoPage> {
     setState(() {
       name = prefs.getString('name') ?? ''; // Load name
       phoneNumber = prefs.getString('phoneNumber') ?? ''; // Load phone number
-      isSaved =
-          name.isNotEmpty && phoneNumber.isNotEmpty; // Check if data exists
+      userNumber = prefs.getString('userNumber') ?? ''; // Load Udrt number
+      isSaved = name.isNotEmpty &&
+          phoneNumber.isNotEmpty &&
+          userNumber.isNotEmpty; // Check if data exists
       nameController.text = name; // Set controller text
-      phoneController.text = phoneNumber; // Set controller text
+      recieverPhoneController.text = phoneNumber; // Set controller text
+      userPhoneController.text =
+          userNumber; // Set controller text for Udrt number
     });
   }
 
@@ -39,17 +46,26 @@ class _UpdateInfoPageState extends State<UpdateInfoPage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('name', name); // Save name
     await prefs.setString('phoneNumber', phoneNumber); // Save phone number
+    await prefs.setString('userNumber', userNumber); // Save Udrt number
   }
 
   void submitDetails() {
     String enteredName =
         nameController.text.toUpperCase(); // Convert name to uppercase
-    String enteredPhone = phoneController.text;
+    String enterdRecieverPhone = recieverPhoneController.text;
+    String enterdUserPhone = userPhoneController.text;
 
     // Validate phone number length
-    if (enteredPhone.length != 10) {
+    if (enterdRecieverPhone.length != 10) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Phone number must be 10 digits.')),
+        const SnackBar(content: Text('Reciver number must be 10 digits.')),
+      );
+      return;
+    }
+    // Validate Udrt number length
+    if (enterdUserPhone.length != 10) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User number must be 10 digits.')),
       );
       return;
     }
@@ -66,7 +82,8 @@ class _UpdateInfoPageState extends State<UpdateInfoPage> {
     // Check if details are already saved
     setState(() {
       name = enteredName;
-      phoneNumber = enteredPhone;
+      phoneNumber = enterdRecieverPhone;
+      userNumber = enterdUserPhone; // Update Udrt number
       isSaved = true; // Mark as saved
     });
 
@@ -74,7 +91,8 @@ class _UpdateInfoPageState extends State<UpdateInfoPage> {
 
     // Optionally, clear the text fields after submission
     nameController.clear();
-    phoneController.clear();
+    recieverPhoneController.clear();
+    userPhoneController.clear();
   }
 
   @override
@@ -127,11 +145,17 @@ class _UpdateInfoPageState extends State<UpdateInfoPage> {
                     'Name: $name', // Display entered name
                     style: const TextStyle(fontSize: 18),
                   ),
-                  const SizedBox(height: 10), // Space between name and phone
+                  const SizedBox(height: 10),
+                  Text(
+                    'User Number: $userNumber', // Display entered Udrt number
+                    style: const TextStyle(fontSize: 18),
+                  ), // Space between name and phone
+                  const SizedBox(height: 10),
                   Text(
                     'Receiver Phone: $phoneNumber', // Display entered phone number
                     style: const TextStyle(fontSize: 18),
                   ),
+                  const SizedBox(height: 10), // Space between phone and Udrt
                 ],
                 const SizedBox(height: 20),
                 TextField(
@@ -151,7 +175,23 @@ class _UpdateInfoPageState extends State<UpdateInfoPage> {
                 ),
                 const SizedBox(height: 10),
                 TextField(
-                  controller: phoneController,
+                  controller: userPhoneController,
+                  decoration: InputDecoration(
+                    hintText: 'Enter the user number',
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(color: "#4B39EF".toColor()),
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: "#4B39EF".toColor()),
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: recieverPhoneController,
                   decoration: InputDecoration(
                     hintText: 'Enter the receiver phone number',
                     border: OutlineInputBorder(
@@ -165,6 +205,7 @@ class _UpdateInfoPageState extends State<UpdateInfoPage> {
                   ),
                   textAlign: TextAlign.center,
                 ),
+
                 const SizedBox(height: 20),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
