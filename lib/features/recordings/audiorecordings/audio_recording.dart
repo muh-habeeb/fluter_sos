@@ -23,7 +23,7 @@ class AudioRecording {
       }
 
       String rootPath = externalDir.path.split('Android')[0];
-      Directory pingMeDir = Directory('$rootPath/PingMe');
+      Directory pingMeDir = Directory('$rootPath/SafeArms');
 
       if (!(await pingMeDir.exists())) {
         await pingMeDir.create(recursive: true);

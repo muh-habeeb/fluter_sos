@@ -156,7 +156,7 @@ class HomePageState extends State<HomePage> {
       appBar: AppBar(
         backgroundColor: "#4B39EF".toColor(),
         title: const Text(
-          "PingMe",
+          "SafeArms",
           style: TextStyle(
             color: Colors.white,
             fontSize: 30,
